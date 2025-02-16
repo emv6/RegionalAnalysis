@@ -1,8 +1,7 @@
 # RegionalAnalysis
-This repository details scripts and analysis of Chapter Three of my PhD Thesis focusing on the regional diversity of *S. aureus* 
 ![bash](https://img.shields.io/badge/language-bash-green)
 ![Python](https://img.shields.io/badge/language-Python-blue)
-
+This repository details scripts and analysis of Chapter Three of my PhD Thesis focusing on the regional diversity of *S. aureus* 
 All bioinformatic analysis was conducted on the New Zealand eScience Infrastructure [NeSI](https://github.com/nesi). FastQC and Kraken2 was used for QC of the samples. Nullarbor was used for genome analysis, SpaTyper and AGRvate was used to determine *spa* and *agr* types. 
 
 ## FastQC 
