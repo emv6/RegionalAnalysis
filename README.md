@@ -1,6 +1,7 @@
 # RegionalAnalysis
 ![bash](https://img.shields.io/badge/language-bash-green)
-![Python](https://img.shields.io/badge/language-Python-blue)
+![Python](https://img.shields.io/badge/language-Python-blue) 
+
 This repository details scripts and analysis of Chapter Three of my PhD Thesis focusing on the regional diversity of *S. aureus* 
 All bioinformatic analysis was conducted on the New Zealand eScience Infrastructure [NeSI](https://github.com/nesi). FastQC and Kraken2 was used for QC of the samples. Nullarbor was used for genome analysis, SpaTyper and AGRvate was used to determine *spa* and *agr* types. 
 
@@ -83,7 +84,7 @@ chmod +x spa_command.txt
 [AGRvate](https://github.com/VishnuRaghuram94/AgrVATE) was used to identify each genomes *agr* type. A conda environment was created then the contig fasta files was used as input for AGRvate. 
 
 ## Calculating Statistical Significance Antimicrobial Resistance, Teat Spray Type and Application 
-Python script was used to calculate if genes were statistically significant (StatisticallySignficanceGenes.py) using Chi-Square/Fisher's Exact based on presence/absence data of each detected gene in human and bovine hosts. 
+Python script was used to calculate if genes were statistically significant (StatisticallySignficanceGenes.py) using Chi-Square/Fisher's Exact based on presence/absence data of each detected gene in 310 bovine *S. aureus* isolates 
 
 
 
