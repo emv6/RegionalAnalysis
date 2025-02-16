@@ -84,7 +84,7 @@ chmod +x spa_command.txt
 [AGRvate](https://github.com/VishnuRaghuram94/AgrVATE) was used to identify each genomes *agr* type. A conda environment was created then the contig fasta files was used as input for AGRvate. 
 
 ## Calculating Statistical Significance Antimicrobial Resistance, Teat Spray Type and Application 
-Python script was used to calculate if genes were statistically significant (StatisticallySignficanceGenes.py) using Chi-Square/Fisher's Exact based on presence/absence data of each detected gene in 310 bovine *S. aureus* isolates 
+Python script was used to calculate if genes were statistically significant [StatisticallySignficanceGenes.py](https://github.com/emv6/RegionalAnalysis/blob/main/StatisticallySignificant.py) using Chi-Square/Fisher's Exact based on presence/absence data of each detected gene in 310 bovine *S. aureus* isolates 
 
 
 
