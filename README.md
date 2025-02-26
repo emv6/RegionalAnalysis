@@ -88,7 +88,7 @@ chmod +x spa_command.txt
 Python script was used to calculate if genes were statistically significant [StatisticallySignficanceGenes.py](https://github.com/emv6/RegionalAnalysis/blob/main/StatisticallySignificant.py) using Chi-Square/Fisher's Exact based on presence/absence data of each detected gene in 309 bovine *S. aureus* isolates 
 
 ## Heat Maps for AMR genes per region and per sequence type (ST) 
-[R]() script used to generate heatmaps for presence/absence of *blaZ* *fosB* *fusC*, *qacA* and *qacB* across the NZ regions and sequence types (STs). 
+[R](https://github.com/emv6/RegionalAnalysis/blob/main/Gene_Heatmap.Rmd) script used to generate heatmaps for presence/absence of *blaZ* *fosB* *fusC*, *qacA* and *qacB* across the NZ regions and sequence types (STs). 
 
 ## Box Plot generation from SNP matrix of two Taranaki study farms. 
 R() script used the pairwise SNP matrix from Nullarbor as input for the the two Taranaki farms (TNK11 and TNK24) to study the genetic diversity between the two farm groups seen on the phylogenetic tree on the phylogenetic tree.  
