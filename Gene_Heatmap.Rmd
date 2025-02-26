@@ -1,0 +1,77 @@
+```{r Region Gene Heatmap}
+library(pheatmap)
+library(reshape2)
+library(RColorBrewer)
+
+setwd("/PhD Analysis/Chapter3/")
+heatmap_region <- read.csv("Region_Gene_Heatmap.csv",header = TRUE, sep = ",")
+rownames(heatmap_region) <- heatmap_region[,1]
+heatmap_region <- as.matrix(heatmap_region[,-1])
+
+color_palette_region <- c(
+  "#D4D4D4", #0
+  "#A4C3DE", #1-2
+  "#66A2D8", #3-4
+  "#1F68A9", #5-8
+  "#0B4171", #9-12
+  "#222255" #12-max
+  
+)
+
+breaks_region <- c(0,0.5,1,3,5,9,12, max(heatmap_region))
+
+
+pheatmap(
+  heatmap_region,
+  color = colorRampPalette(color_palette_region)(length(breaks_region) - 1),
+  breaks = breaks_region,
+  cluster_rows = FALSE, 
+  border_color = "black",
+  cluster_cols = FALSE, 
+  fontsize = 14, 
+         fontsize_row = 14, 
+         fontsize_col = 14,
+         filename ="AMR_Heatmap.jpg")
+         dev.off()
+)
+
+```
+
+```{r Sequence Type Gene Heatmap}
+library(pheatmap)
+library(reshape2)
+library(RColorBrewer)
+
+setwd("/PhD Analysis/Chapter3/")
+heatmap_st <- read.csv("ST_Gene_Heatmap.csv",header = TRUE, sep = ",")
+rownames(heatmap_st) <- heatmap_st[,1]
+heatmap_st <- as.matrix(heatmap_st[,-1])
+
+color_palette_st <- c(
+  "#D4D4D4", #0
+  "#A4C3DE", #1-2
+  "#66A2D8", #3-4
+  "#1F68A9", #5-8
+  "#0B4171", #10-25
+  "#222255" #30-max
+  
+)
+
+breaks_st <- c(0,0.5,1,3,5,10,30, max(heatmap_st))
+
+
+pheatmap(
+  heatmap_st,
+  color = colorRampPalette(color_palette_st)(length(breaks_st) - 1),
+  breaks = breaks_st,
+  cluster_rows = FALSE, 
+  border_color = "black",
+  cluster_cols = FALSE, 
+  fontsize = 14, 
+         fontsize_row = 14, 
+         fontsize_col = 14,
+         filename ="ST_Heatmap.jpg")
+         dev.off()
+)
+
+```
