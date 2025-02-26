@@ -1,0 +1,76 @@
+library(ggplot2)
+library(ggpubr)
+# Read the Excel file
+library(readxl)
+setwd("/PhD Analysis/Chapter3/")
+df <- read_excel("Farm1.xlsx")
+# Rename the first column
+colnames(df)[1] <- "Isolate_A"
+# Convert to long format
+library(tidyr)
+df_long <- pivot_longer(df, -Isolate_A, names_to = "Isolate_B", values_to = "SNP_Differences")
+# Remove self-comparisons
+df_long <- df_long[df_long$Isolate_A != df_long$Isolate_B, ]
+# Define group mapping
+group_mapping <- c("B793"="1A", "B794"="1A", "B795"="1A", "B796"="1A",
+                  "B1190"="1B", "B1191"="1B")
+# Assign groups
+df_long$Group_A <- group_mapping[df_long$Isolate_A]
+df_long$Group_B <- group_mapping[df_long$Isolate_B]
+# Keep only within-group comparisons
+df_long <- df_long[df_long$Group_A == df_long$Group_B, ]
+df_long$Group <- df_long$Group_A  # Assign final group
+# Create box plot with statistical test
+
+data <- ggplot(df_long, aes(x = Group, y = SNP_Differences, fill = Group)) +
+ geom_boxplot(outlier.color = "red", width = 0.5) +
+ geom_jitter(width = 0.2, alpha = 0.7) +
+ stat_compare_means(method = "t.test", label = "p.format") +  # Add p-value
+ labs(x = "Group", y = "SNP Differences") +
+  theme_minimal() +
+          coord_cartesian(ylim = c(0,30)) +
+ scale_fill_manual(values = c("1A" = "skyblue", "1B" = "red")) +
+  theme(axis.title = element_text(size = 14, color = "black"),
+        axis.text = element_text(size = 14, color = "black"))
+
+ggsave("boxplotTNK11.jpg", plot=data, device="jpeg")
+
+```
+```{r}
+library(ggplot2)
+library(ggpubr)
+# Read the Excel file
+library(readxl)
+setwd("/PhD Analysis/Chapter3/")
+df <- read_excel("Farm2.xlsx")
+# Rename the first column
+colnames(df)[1] <- "Isolate_A"
+# Convert to long format
+library(tidyr)
+df_long <- pivot_longer(df, -Isolate_A, names_to = "Isolate_B", values_to = "SNP_Differences")
+# Remove self-comparisons
+df_long <- df_long[df_long$Isolate_A != df_long$Isolate_B, ]
+# Define group mapping
+group_mapping <- c("B879"="2A", "B880"="2A", "B882"="2A", "B1460"="2A", "B1461"="2A",
+                  "B1588"="2B", "B1589"="2B","B1590"="2B", "B1591"="2B", "B1592"="2B", "B1593"="2B", "B1594"="2B", "B1595"="2B")
+# Assign groups
+df_long$Group_A <- group_mapping[df_long$Isolate_A]
+df_long$Group_B <- group_mapping[df_long$Isolate_B]
+# Keep only within-group comparisons
+df_long <- df_long[df_long$Group_A == df_long$Group_B, ]
+df_long$Group <- df_long$Group_A  # Assign final group
+# Create box plot with statistical test
+
+data_TNK24 <- ggplot(df_long, aes(x = Group, y = SNP_Differences, fill = Group)) +
+ geom_boxplot(outlier.color = "red", width = 0.5) +
+ geom_jitter(width = 0.2, alpha = 0.7) +
+ stat_compare_means(method = "t.test", label = "p.signif") +  # Add p-value
+ labs(x = "Group", y = "SNP Differences") +
+  theme_minimal() +
+          coord_cartesian(ylim = c(0,250)) +
+ scale_fill_manual(values = c("2A" = "skyblue", "2B" = "red")) +
+  theme(axis.title = element_text(size = 14, color = "black"),
+        axis.text = element_text(size = 14, color = "black"))
+
+ggsave("boxplotTNK24.jpg", plot=data_TNK24, device="jpeg")
+```
