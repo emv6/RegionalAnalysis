@@ -26,7 +26,7 @@ df_long$Group <- df_long$Group_A  # Assign final group
 data <- ggplot(df_long, aes(x = Group, y = SNP_Differences, fill = Group)) +
  geom_boxplot(outlier.color = "red", width = 0.5) +
  geom_jitter(width = 0.2, alpha = 0.7) +
- stat_compare_means(method = "t.test", label = "p.format") +  # Add p-value
+ stat_compare_means(method = "wilcox.test", label = "p.signif") +  # Add p-value
  labs(x = "Group", y = "SNP Differences") +
   theme_minimal() +
           coord_cartesian(ylim = c(0,30)) +
@@ -65,7 +65,7 @@ df_long$Group <- df_long$Group_A  # Assign final group
 data_TNK24 <- ggplot(df_long, aes(x = Group, y = SNP_Differences, fill = Group)) +
  geom_boxplot(outlier.color = "red", width = 0.5) +
  geom_jitter(width = 0.2, alpha = 0.7) +
- stat_compare_means(method = "t.test", label = "p.signif") +  # Add p-value
+ stat_compare_means(method = "wilcox.test", label = "p.signif") +  # Add p-value
  labs(x = "Group", y = "SNP Differences") +
   theme_minimal() +
           coord_cartesian(ylim = c(0,250)) +
