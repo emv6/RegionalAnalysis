@@ -1,0 +1,78 @@
+```{r fig.width=14, fig.height=6}
+# Load libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(scales)
+library(readxl)
+
+data <- read_excel("yourfile.xlsx, sheet = 1)
+
+# Add multiline RegionLabel for axis
+data$RegionLabel <- gsub(" ", "\n", data$Region)
+
+# Reshape data
+data_long <- data %>%
+  pivot_longer(cols = starts_with("ST"), names_to = "ST", values_to = "Count") %>%
+  group_by(Region, RegionLabel) %>%
+  mutate(Proportion = Count / sum(Count)) %>%
+  ungroup()
+
+# Order STs by total frequency
+st_order <- data_long %>%
+  group_by(ST) %>%
+  summarise(Total = sum(Count), .groups = "drop") %>%
+  arrange(desc(Total)) %>%
+  pull(ST)
+
+data_long$ST <- factor(data_long$ST, levels = st_order)
+data_long$RegionLabel <- factor(data_long$RegionLabel, levels = unique(data$RegionLabel))
+
+# Total isolates for annotations
+totals <- data_long %>%
+  group_by(RegionLabel) %>%
+  summarise(Total = sum(Count), .groups = "drop")
+
+# Plot
+ plot<- ggplot(data_long, aes(x = RegionLabel, y = Proportion, fill = ST)) +
+  geom_bar(stat = "identity", color = "black") +
+
+  # Add total count above each bar
+  geom_text(data = totals, aes(x = RegionLabel, y = 1.07, label = Total),
+            inherit.aes = FALSE, size = 4, color = "black") +
+
+  scale_fill_manual(values = c(
+    "ST1" = "red", "ST97" = "blue", "ST705" = "orange",
+    "ST8" = "brown", "ST5" = "yellow", "ST188" = "pink",
+    "ST1247" = "green", "ST1640" = "purple", "ST6161" = "orchid",
+    "ST6985" = "beige", "ST_New" = "grey"
+  )) +
+
+  scale_y_continuous(
+    labels = percent_format(accuracy = 1),
+    breaks = seq(0, 1, 0.1),
+    expand = expansion(mult = c(0, 0.15))  # bars touch x-axis
+  ) +
+
+  labs(
+    y = "Proportion of Isolates",
+    x = "Region",
+    fill = "Sequence Type"
+  ) +
+
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    axis.line.x = element_line(color = "black", linewidth = 1),
+    axis.line.y = element_line(color = "black", linewidth = 1),
+    axis.ticks = element_line(color = "black"),
+    axis.ticks.length = unit(0.3, "cm"),
+    axis.text.x = element_text(color = "black", size = 9, lineheight = 1.0),
+    axis.text.y = element_text(color = "black", size = 9, margin = margin(r = 6)),
+    axis.title = element_text(color = "black"),
+    plot.margin = margin(t = 20, r = 20, b = 80, l = 40),
+    legend.title = element_text(color = "black"),
+    legend.text = element_text(color = "black")
+  )
+
+ggsave("Figure3.4.png", dpi = 300, width = 14, height = 6)
