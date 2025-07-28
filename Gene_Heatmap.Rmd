@@ -3,22 +3,21 @@ library(pheatmap)
 library(reshape2)
 library(RColorBrewer)
 
-setwd("/PhD Analysis/Chapter3/")
 heatmap_region <- read.csv("Region_Gene_Heatmap.csv",header = TRUE, sep = ",")
 rownames(heatmap_region) <- heatmap_region[,1]
 heatmap_region <- as.matrix(heatmap_region[,-1])
 
 color_palette_region <- c(
   "#D4D4D4", #0
-  "#A4C3DE", #1-2
-  "#66A2D8", #3-4
-  "#1F68A9", #5-8
-  "#0B4171", #9-12
-  "#222255" #12-max
+  "#A4C3DE", #0.05
+  "#66A2D8", #0.15
+  "#1F68A9", #0.30
+  "#0B4171", #0.5
+  "#222255" #0.5-max
   
 )
 
-breaks_region <- c(0,0.5,1,3,5,9,12, max(heatmap_region))
+breaks_region <- c(0.00,0.05,0.15,0.30,0.50, max(heatmap_region) + 0.01)
 
 
 pheatmap(
@@ -42,22 +41,21 @@ library(pheatmap)
 library(reshape2)
 library(RColorBrewer)
 
-setwd("/PhD Analysis/Chapter3/")
 heatmap_st <- read.csv("ST_Gene_Heatmap.csv",header = TRUE, sep = ",")
 rownames(heatmap_st) <- heatmap_st[,1]
 heatmap_st <- as.matrix(heatmap_st[,-1])
 
 color_palette_st <- c(
   "#D4D4D4", #0
-  "#A4C3DE", #1-2
-  "#66A2D8", #3-4
-  "#1F68A9", #5-8
-  "#0B4171", #10-25
-  "#222255" #30-max
+  "#A4C3DE", #0.05
+  "#66A2D8", #0.15
+  "#1F68A9", #0.30
+  "#0B4171", #0.6
+  "#222255" #0.6-max
   
 )
 
-breaks_st <- c(0,0.5,1,3,5,10,30, max(heatmap_st))
+breaks_st <- c(0.00,0.05,0.15,0.30,0.60, 1.00 + 0.001)
 
 
 pheatmap(
