@@ -1,77 +1,250 @@
-```
-library(ggplot2)
-library(ggpubr)
-# Read the Excel file
-library(readxl)
-setwd("/PhD Analysis/Chapter3/")
-df <- read_excel("Farm1.xlsx")
-# Rename the first column
-colnames(df)[1] <- "Isolate_A"
-# Convert to long format
-library(tidyr)
-df_long <- pivot_longer(df, -Isolate_A, names_to = "Isolate_B", values_to = "SNP_Differences")
-# Remove self-comparisons
-df_long <- df_long[df_long$Isolate_A != df_long$Isolate_B, ]
-# Define group mapping
-group_mapping <- c("B793"="1A", "B794"="1A", "B795"="1A", "B796"="1A",
-                  "B1190"="1B", "B1191"="1B")
-# Assign groups
-df_long$Group_A <- group_mapping[df_long$Isolate_A]
-df_long$Group_B <- group_mapping[df_long$Isolate_B]
-# Keep only within-group comparisons
-df_long <- df_long[df_long$Group_A == df_long$Group_B, ]
-df_long$Group <- df_long$Group_A  # Assign final group
-# Create box plot with statistical test
-
-data <- ggplot(df_long, aes(x = Group, y = SNP_Differences, fill = Group)) +
- geom_boxplot(outlier.color = "red", width = 0.5) +
- geom_jitter(width = 0.2, alpha = 0.7) +
- stat_compare_means(method = "wilcox.test", label = "p.signif") +  # Add p-value
- labs(x = "Group", y = "SNP Differences") +
-  theme_minimal() +
-          coord_cartesian(ylim = c(0,30)) +
- scale_fill_manual(values = c("1A" = "skyblue", "1B" = "red")) +
-  theme(axis.title = element_text(size = 14, color = "black"),
-        axis.text = element_text(size = 14, color = "black"))
-
-ggsave("boxplotTNK11.jpg", plot=data, device="jpeg")
-
-```
+---
+title: "ST1_NMDS_BoxPlots"
+output: html_notebook
+---
 ```{r}
 library(ggplot2)
-library(ggpubr)
-# Read the Excel file
 library(readxl)
-setwd("/PhD Analysis/Chapter3/")
-df <- read_excel("Farm2.xlsx")
-# Rename the first column
-colnames(df)[1] <- "Isolate_A"
-# Convert to long format
-library(tidyr)
-df_long <- pivot_longer(df, -Isolate_A, names_to = "Isolate_B", values_to = "SNP_Differences")
-# Remove self-comparisons
-df_long <- df_long[df_long$Isolate_A != df_long$Isolate_B, ]
-# Define group mapping
-group_mapping <- c("B879"="2A", "B880"="2A", "B882"="2A", "B1460"="2A", "B1461"="2A",
-                  "B1588"="2B", "B1589"="2B","B1590"="2B", "B1591"="2B", "B1592"="2B", "B1593"="2B", "B1594"="2B", "B1595"="2B")
-# Assign groups
-df_long$Group_A <- group_mapping[df_long$Isolate_A]
-df_long$Group_B <- group_mapping[df_long$Isolate_B]
-# Keep only within-group comparisons
-df_long <- df_long[df_long$Group_A == df_long$Group_B, ]
-df_long$Group <- df_long$Group_A  # Assign final group
-# Create box plot with statistical test
+library(dplyr)
+library(reshape2)
+library(vegan)
+library(Matrix)
+library(tibble)
+library(ggpubr)
+library(ggsignif)
+library(patchwork)
 
-data_TNK24 <- ggplot(df_long, aes(x = Group, y = SNP_Differences, fill = Group)) +
- geom_boxplot(outlier.color = "red", width = 0.5) +
- geom_jitter(width = 0.2, alpha = 0.7) +
- stat_compare_means(method = "wilcox.test", label = "p.signif") +  # Add p-value
- labs(x = "Group", y = "SNP Differences") +
+#Read the Excel files
+setwd("~/PhD/Chapter3/")
+Farm_1 <- read_excel("Farm1.xlsx")
+Farm_2 <- read_excel("Farm2.xlsx")
+
+#Set rownames convert to dataframe to do this
+Farm_1 <- as.data.frame(Farm_1)
+rownames(Farm_1) <- Farm_1[[1]]
+Farm_1 <- Farm_1[, -1]
+Farm_1_matrix <- as.matrix(Farm_1)
+
+Farm_2 <- as.data.frame(Farm_2)
+rownames(Farm_2) <- Farm_2[[1]]
+Farm_2 <- Farm_2[, -1]
+Farm_2_matrix <- as.matrix(Farm_2)
+
+#Combine distance matrices 
+Combined <- bdiag(Farm_1_matrix, Farm_2_matrix)
+Combined <- as.matrix(Combined)
+
+#Update row/column names 
+rownames(Combined) <-c(rownames(Farm_1), rownames(Farm_2))
+colnames(Combined) <-c(colnames(Farm_1), colnames(Farm_2))
+
+##Create Metadata 
+cluster_labels <- c(
+  "B793"="1A", "B794"="1A", "B795"="1A", "B796"="1A",
+  "B1190"="1B", "B1191"="1B",
+  "B879"="2A", "B880"="2A", "B882"="2A", "B1460"="2A", "B1461"="2A",
+  "B1588"="2B", "B1589"="2B", "B1590"="2B", "B1591"="2B", 
+  "B1592"="2B", "B1593"="2B", "B1594"="2B", "B1595"="2B"
+)
+
+metadata <- data.frame(Isolate = names(cluster_labels), Cluster = unname(cluster_labels), Farm = ifelse(grepl("^1", unname(cluster_labels)), "Farm 1", "Farm 2"))
+
+##Farm 1 Comparison 
+farm1_ids <- metadata$Isolate[metadata$Farm == "Farm 1"]
+dist_farm1 <- as.dist(Combined[farm1_ids, farm1_ids])
+meta_farm1 <- metadata %>% filter(Isolate %in% farm1_ids)
+
+#Permanova 
+adonis2(dist_farm1 ~ Cluster, data = meta_farm1)
+
+# NMDS for Farm 1
+set.seed(42)
+nmds_farm1 <- metaMDS(dist_farm1, k=2, trymax = 100)
+nmds_farm1_points <- as.data.frame(nmds_farm1$points)
+nmds_farm1_points$Isolate <- rownames(nmds_farm1_points)
+plot_data_farm1 <- left_join(nmds_farm1_points, meta_farm1, by = "Isolate")
+
+plot_A <- ggplot(plot_data_farm1, aes(MDS1, MDS2, color = Cluster)) +
+  geom_point(size = 4) + scale_color_manual(values =c("1A" = "#fc0b03", "1B" = "#0324fc")) +
   theme_minimal() +
-          coord_cartesian(ylim = c(0,250)) +
- scale_fill_manual(values = c("2A" = "skyblue", "2B" = "red")) +
-  theme(axis.title = element_text(size = 14, color = "black"),
-        axis.text = element_text(size = 14, color = "black"))
+  labs(title = "NMDS - Farm 1 (1A vs 1B)", x = "NMDS1", y = "NMDS2", subtitle = paste("Stress =", round(nmds_farm1$stress, 4))) +
+  theme(axis.title = element_text(color = "black", size = 12), 
+        axis.text = element_text(color = "black"), 
+        axis.line = element_line(color = "black"), 
+        axis.ticks = element_line(color = "black"), 
+        legend.title = element_text(color = "black"), 
+        legend.text = element_text(color = "black"))
 
-ggsave("boxplotTNK24.jpg", plot=data_TNK24, device="jpeg")
+##Farm 2 Comparison
+farm2_ids <- metadata$Isolate[metadata$Farm == "Farm 2"]
+dist_farm2 <- as.dist(Combined[farm2_ids, farm2_ids])
+meta_farm2 <- metadata %>% filter(Isolate %in% farm2_ids)
+
+# PERMANOVA
+adonis2(dist_farm2 ~ Cluster, data = meta_farm2)
+
+# NMDS for Farm 2
+nmds_farm2 <- metaMDS(dist_farm2, k=2, trymax=100)
+nmds_farm2_points <- as.data.frame(nmds_farm2$points)
+nmds_farm2_points$Isolate <- rownames(nmds_farm2_points)
+plot_data_farm2 <- left_join(nmds_farm2_points, meta_farm2, by = "Isolate")
+
+plot_B <- ggplot(plot_data_farm2, aes(MDS1, MDS2, color = Cluster)) +
+  geom_jitter(size = 4, width = 5, height = 12) +
+  scale_color_manual(values = c("2A" = "#d55e00", "2B" = "#009e73")) +
+  theme_minimal() +
+  labs(
+    title = "NMDS - Farm 2 (2A vs 2B)",
+    x = "NMDS1",
+    y = "NMDS2",
+    subtitle = paste("Stress =", format(nmds_farm2$stress, digits = 2, scientific = FALSE))
+  ) +
+  theme(
+    axis.title = element_text(color = "black", size = 12),
+    axis.text = element_text(color = "black"),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    legend.title = element_text(color = "black"),
+    legend.text = element_text(color = "black")
+  )
+
+# Box Plot 
+pairwise_long <- melt(as.matrix(as.dist(Combined)), 
+                      varnames = c("Isolate1", "Isolate2"), 
+                      value.name = "SNP_Distance") %>%
+  filter(Isolate1 != Isolate2)
+
+pairwise_long <- pairwise_long %>%
+  left_join(metadata, by = c("Isolate1" = "Isolate")) %>%
+  rename(Cluster1 = Cluster, Farm1 = Farm) %>%
+  left_join(metadata, by = c("Isolate2" = "Isolate")) %>%
+  rename(Cluster2 = Cluster, Farm2 = Farm)
+
+###Farm 1 Box plot 
+pairwise_farm1 <- pairwise_long %>%
+  filter(Farm1 == "Farm 1", Farm2 == "Farm 1") %>%
+  mutate(Comparison = case_when(
+    Cluster1 == "1A" & Cluster2 == "1A" ~ "1A vs 1A",
+    Cluster1 == "1B" & Cluster2 == "1B" ~ "1B vs 1B",
+    (Cluster1 == "1A" & Cluster2 == "1B") | (Cluster1 == "1B" & Cluster2 == "1A") ~ "1A vs 1B",
+    TRUE ~ NA_character_  # filter out other clusters if any
+  )) %>%
+  filter(!is.na(Comparison))
+
+#Define pairwise comparisons for significance stars on box plot 
+comparisons <- list(
+  c("1A vs 1A", "1A vs 1B"),
+  c("1B vs 1B", "1A vs 1B"),
+  c("1A vs 1A", "1B vs 1B")
+)
+
+max_snp <- max(pairwise_farm1$SNP_Distance, na.rm = TRUE)
+
+plot_c <- ggplot(pairwise_farm1, aes(x = Comparison, y = SNP_Distance, fill = Comparison)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "SNP Distances Within and Between Clusters (Farm 1)",
+       y = "Pairwise SNP Distance", x = "") +
+  scale_fill_manual(values = c("1A vs 1A" = "#FFC20A", "1B vs 1B" = "#D55E00", "1A vs 1B" = "#0072b2")) +
+  ggsignif::geom_signif(
+    comparisons = comparisons,
+    map_signif_level = TRUE,
+    textsize = 5,
+    tip_length = 0.02,
+    y_position = c(max_snp * 1.05, max_snp * 1.15, max_snp * 1.25)) + theme(plot.title.position = "plot",
+    plot.margin = margin(t = 20, r = 5, b = 5, l = 5),
+    axis.title = element_text(color = "black", size = 10),
+    axis.text = element_text(color = "black"),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    legend.title = element_text(color = "black"),
+    legend.text = element_text(color = "black") 
+  )
+
+
+# Wilcoxon test: Farm 1 
+wilcox_1A <- wilcox.test(
+  SNP_Distance ~ (Comparison == "1A vs 1B"),
+  data = pairwise_farm1 %>% filter(Comparison %in% c("1A vs 1A", "1A vs 1B"))
+)
+print(wilcox_1A) #*** <0.001
+
+wilcox_1B <- wilcox.test(
+  SNP_Distance ~ (Comparison == "1A vs 1B"),
+  data = pairwise_farm1 %>% filter(Comparison %in% c("1B vs 1B", "1A vs 1B"))
+)
+print(wilcox_1B) #* 0.01 < p ≤ 0.05
+
+wilcox_within <- wilcox.test(
+  SNP_Distance ~ (Comparison == "1B vs 1B"),
+  data = pairwise_farm1 %>% filter(Comparison %in% c("1A vs 1A", "1B vs 1B"))
+)
+print(wilcox_within) # * 0.01 < p ≤ 0.05
+
+
+##Farm 2 
+pairwise_farm2 <- pairwise_long %>%
+  filter(Farm1 == "Farm 2", Farm2 == "Farm 2") %>%
+  mutate(Comparison = case_when(
+    Cluster1 == "2A" & Cluster2 == "2A" ~ "2A vs 2A",
+    Cluster1 == "2B" & Cluster2 == "2B" ~ "2B vs 2B",
+    (Cluster1 == "2A" & Cluster2 == "2B") | (Cluster1 == "2B" & Cluster2 == "2A") ~ "2A vs 2B",
+    TRUE ~ NA_character_  # filter out other clusters if any
+  )) %>%
+  filter(!is.na(Comparison))
+
+#Define pairwise comparisons for significance stars on box plot 
+comparisons_2 <- list(
+  c("2A vs 2A", "2A vs 2B"),
+  c("2B vs 2B", "2A vs 2B"),
+  c("2A vs 2A", "2B vs 2B")
+)
+
+max_snp_2 <- max(pairwise_farm2$SNP_Distance, na.rm = TRUE)
+
+plot_d <- ggplot(pairwise_farm2, aes(x = Comparison, y = SNP_Distance, fill = Comparison)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "SNP Distances Within and Between Clusters (Farm 2)",
+       y = "Pairwise SNP Distance", x = "") +
+  scale_fill_manual(values = c("2A vs 2A" = "#E1BE6A", "2B vs 2B" = "#EC7117", "2A vs 2B" = "#005AB5")) +
+  ggsignif::geom_signif(
+    comparisons = comparisons_2,
+    map_signif_level = TRUE,
+    textsize = 4,
+    tip_length = 0.02,
+    y_position = c(max_snp_2 * 1.05, max_snp_2 * 1.15, max_snp_2 * 1.25)) + theme(
+    axis.title = element_text(color = "black", size = 10),
+    axis.text = element_text(color = "black"),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    legend.title = element_text(color = "black"),
+    legend.text = element_text(color = "black") 
+  )
+
+# Wilcoxon test: Farm 2
+wilcox_2A <- wilcox.test(
+  SNP_Distance ~ (Comparison == "2A vs 2B"),
+  data = pairwise_farm2 %>% filter(Comparison %in% c("2A vs 2A", "2A vs 2B"))
+)
+print(wilcox_2A) #** 0.001 < p ≤ 0.01
+
+wilcox_2B <- wilcox.test(
+  SNP_Distance ~ (Comparison == "2A vs 2B"),
+  data = pairwise_farm2 %>% filter(Comparison %in% c("2B vs 2B", "2A vs 2B"))
+)
+print(wilcox_2B) # NS p > 0.05
+
+wilcox_within_2 <- wilcox.test(
+  SNP_Distance ~ (Comparison == "2B vs 2B"),
+  data = pairwise_farm2 %>% filter(Comparison %in% c("2A vs 2A", "2B vs 2B"))
+)
+print(wilcox_within_2) # NS p > 0.05
+
+
+#Combine plots with Patchwork
+Combined_plot <- (plot_A + plot_B + plot_layout(widths = c(2, 3.5))) / (plot_c + plot_d + plot_layout(widths = c(2, 2.5))) + plot_annotation(tag_levels = 'A') + plot_layout(heights = c(1.5, 2))
+ggsave("Combined_Plot.png", Combined_plot, width = 12, height = 9, dpi = 300)
+
 ```
+
