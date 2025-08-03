@@ -91,7 +91,7 @@ Python script was used to calculate if genes were statistically significant [Sta
 [R](https://github.com/emv6/RegionalAnalysis/blob/main/Gene_Heatmap.Rmd) script used to generate heatmaps for the proportions of the presence/absence of *blaZ* *fosB* *fusC*, *qacA* and *qacB* across the NZ regions and sequence types (STs). 
 
 ## NMDS and Box Plot generation from SNP matrix of two Taranaki study farms. 
-[R](https://github.com/emv6/RegionalAnalysis/blob/main/ST1_Boxplots.Rmd) script used the pairwise SNP matrix from Nullarbor as input for the the two Taranaki farms (TNK11 and TNK24) to study the genetic diversity between the two farm groups seen on the phylogenetic tree on the phylogenetic tree.  
+[R](https://github.com/emv6/RegionalAnalysis/blob/main/ST1_Boxplots_NMDS.Rmd) script used the pairwise SNP matrix from Nullarbor as input for the the two Taranaki farms (TNK11 and TNK24) to study the genetic diversity between the two farm groups seen on the phylogenetic tree on the phylogenetic tree.  
 
 
 
